@@ -41,6 +41,8 @@ function parseData(myJson) {
   let totals = {}
   let votes = (myJson)
 
+  totals.numberOfVoters = votes.length
+
   function updateTotal(goal, finalist) {
     if (finalist && !finalist == '') {
       if (!totals[goal]) totals[goal] = []
@@ -59,7 +61,7 @@ function parseData(myJson) {
       updateTotal(goal, vote.data[goal])
     })
   })
-
+  
   return totals
 }
 

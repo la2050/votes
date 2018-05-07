@@ -19,11 +19,29 @@
   function showChart(totals) {
     const goals = ['learn', 'create', 'play', 'connect', 'live']
 
+    var totalVotes = 0;
     goals.forEach(function(goal) {
-      console.log('goal: ' + goal);
+      var data = totals[goal]
+      data.forEach(function(data) {
+        totalVotes += data.votes;
+      });
+    });
+    document.getElementById('total-votes').textContent = totalVotes;
+    document.getElementById('total-voters').textContent = totals.numberOfVoters;
+    
+    goals.forEach(function(goal) {
+
+    console.log('goal: ' + goal);
+
+    var data = totals[goal]
+    var ticks = 1
+
+    data.forEach(function(data) {
+      if (data.votes > ticks) ticks = data.votes
+    })
 
     var margin = {top: 20, right: 20, bottom: 70, left: 40},
-        width = 600 - margin.left - margin.right,
+        width = 400 - margin.left - margin.right,
         height = 300 - margin.top - margin.bottom;
 
     // Parse the date / time
@@ -37,12 +55,16 @@
         .scale(x)
         .orient("bottom") 
         //.tickFormat(d3.time.format("%Y-%m"));
-
+    
     var yAxis = d3.svg.axis()
         .scale(y)
         .orient("left")
-        //  .ticks(10);
+        .ticks(ticks);
 
+    var title = document.createElement('h2')
+    title.innerText = goal
+    document.body.appendChild(title)
+    
     var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", 600 + margin.top + margin.bottom)
@@ -51,8 +73,6 @@
               "translate(" + margin.left + "," + margin.top + ")");
 
     // d3.csv("bar-data.csv", function(error, data) {
-
-    var data = totals[goal]
 
       x.domain(data.map(function(d) { return d.finalist; }));
       y.domain([0, d3.max(data, function(d) { return d.votes; })]);

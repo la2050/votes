@@ -1,71 +1,78 @@
-/* styles */
-/* called by your view template */
-
-* {
-  box-sizing: border-box;
-}
 
 body {
-  font-family: "Benton Sans", "Helvetica Neue", helvetica, arial, sans-serif;
-  margin: 2em;
+  font: 100%/1.5 "Helvetica Nueue", Helvetica, sans-serif;
+  margin: 6em 4.5em;
+  text-align: center;
+}
+svg {
+  margin: 0 4.5em 4.5em;
+}
+h2 {
+  margin-top: 4.5em;
+  margin-bottom: 1.5em;
+  text-transform: uppercase;
 }
 
-h1 {
-  font-style: italic;
-  color: #373fff;
+@media (min-width: 1000px) {
+  body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 3em;
+    grid-row-gap: 4.5em;
+  }
+  header {
+    grid-row: 1/2;
+    grid-column: 1/-1;
+  }
+  h2,
+  svg {
+    margin: 0;
+    align-self: center;
+    justify-self: center;
+  }
+  h2:nth-of-type(1),
+  h2:nth-of-type(2) {
+    grid-row: 2/3;
+  }
+  svg:nth-of-type(1),
+  svg:nth-of-type(2) {
+    grid-row: 3/4;
+  }
+  h2:nth-of-type(3),
+  h2:nth-of-type(4) {
+    grid-row: 4/5;
+  }
+  svg:nth-of-type(3),
+  svg:nth-of-type(4) {
+    grid-row: 5/6;
+  }
+  h2:nth-of-type(5) {
+    grid-column: 1/-1;
+    grid-row: 6/7;
+  }
+  svg:nth-of-type(5) {
+    grid-column: 1/-1;
+    grid-row: 7/8;
+  }
 }
 
-.bold {
-  font-weight: bold;
-}
-
-p {
-  max-width: 600px;
-}
-
-form {
-  margin-bottom: 25px;
-  padding: 15px;
-  background-color: cyan;
-  display: inline-block;
-  width: 100%;
-  max-width: 340px;
-  border-radius: 3px;
-}
-
-input {
-  display: block;
-  margin-bottom: 10px;
-  padding: 5px;
-  width: 100%;
-  border: 1px solid lightgrey;
-  border-radius: 3px;
-  font-size: 16px;
-}
-
-button {
-  font-size: 16px;
-  border-radius: 3px;
-  background-color: lightgrey;
-  border: 1px solid grey;
-  box-shadow: 2px 2px teal;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: yellow;
-}
-
-button:active {
-  box-shadow: none;
-}
-
-li {
-  margin-bottom: 5px;
-}
-
-footer {
-  margin-top: 50px;
-  padding-top: 25px;
-  border-top: 1px solid lightgrey;
+@media (min-width: 2500px) {
+  body {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-column-gap: 3em;
+    grid-row-gap: 4.5em;
+  }
+  header:nth-child(n) {
+    grid-row: 1/2;
+    grid-column: 1/-1;
+  }
+  h2:nth-child(n) {
+    grid-row: 2/3;
+    grid-column: auto;
+  }
+  svg:nth-child(n) {
+    grid-row: 3/4;
+    grid-column: auto;
+  }
 }
