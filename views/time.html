@@ -1,0 +1,116 @@
+<!-- This is a static file -->
+<!-- served from your routes in server.js -->
+
+<!-- You might want to try something fancier: -->
+<!-- html/nunjucks docs: https://mozilla.github.io/nunjucks/ -->
+<!-- pug: https://pugjs.org/ -->
+<!-- haml: http://haml.info/ -->
+<!-- hbs(handlebars): http://handlebarsjs.com/ -->
+
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="robots" content="noindex" />
+  <title>Votes in the My LA2050 Activation Challenge (Test data)</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+
+  .arc text {
+    font: 10px sans-serif;
+    text-anchor: middle;
+  }
+
+  .arc path {
+    stroke: #fff;
+  }
+
+  </style>
+  
+</head>
+<body>
+
+<header>
+  <h1>Votes in the My LA2050 Activation Challenge (Test data)</h1>
+</header>
+
+<svg width="960" height="500"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+
+(function(){
+
+  fetch('/data/')
+    .then(function(response) {
+      return response.json()
+    })
+    .then(function(myJson) {
+      let data = (myJson)
+      console.dir(data)
+      showChart(data.time.learn)
+    })
+    .catch(function(error) {
+      console.error(error)
+    })
+
+  function showChart(data) {
+    // console.dir(data)
+
+    const goals = ['learn', 'create', 'play', 'connect', 'live']
+
+    var svg = d3.select("svg"),
+        margin = {top: 20, right: 20, bottom: 30, left: 50},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom,
+        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // https://github.com/d3/d3-time-format/blob/master/README.md#locale_parse
+    // https://github.com/d3/d3-time-format/issues/24#issuecomment-252112973
+    var parseMilliseconds = d3.utcParse("%Y-%m-%dT%H:%M:%S.Z"),
+      stripNanoseconds = function(s) { console.log('stripNanoseconds: ' + s.slice(0, -4) + "Z"); return s.slice(0, -4) + "Z"; },
+      parseTime = function(s) { console.log('parseTime: ' + s); return parseMilliseconds(stripNanoseconds(s)); };
+    
+    var x = d3.scaleTime()
+        .rangeRound([0, width]);
+
+    var y = d3.scaleLinear()
+        .rangeRound([height, 0]);
+
+    var area = d3.area()
+        .x(function(d) { console.dir(d); return x(parseTime(d.timestamp)); })
+        .y1(function(d) { return y(d.votes); });
+
+    x.domain(d3.extent(data, function(d) { console.dir(d); return parseTime(d.timestamp); }));
+    y.domain([0, d3.max(data, function(d) { return d.votes; })]);
+    area.y0(y(0));
+
+    g.append("path")
+        .datum(data)
+        .attr("fill", "steelblue")
+        .attr("d", area);
+
+    g.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+    g.append("g")
+        .call(d3.axisLeft(y))
+      .append("text")
+        .attr("fill", "#000")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", "0.71em")
+        .attr("text-anchor", "end")
+        .text("Price ($)");
+
+    
+  }
+})()
+    
+    
+</script>
+  
+</body>
+</html>
+

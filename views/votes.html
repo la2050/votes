@@ -1,0 +1,275 @@
+<!-- This is a static file -->
+<!-- served from your routes in server.js -->
+
+<!-- You might want to try something fancier: -->
+<!-- html/nunjucks docs: https://mozilla.github.io/nunjucks/ -->
+<!-- pug: https://pugjs.org/ -->
+<!-- haml: http://haml.info/ -->
+<!-- hbs(handlebars): http://handlebarsjs.com/ -->
+
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="robots" content="noindex" />
+  <title>Votes in the My LA2050 Activation Challenge (Test data)</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+
+  .arc text {
+    font: 10px sans-serif;
+    text-anchor: middle;
+  }
+
+  .arc path {
+    stroke: #fff;
+  }
+
+  table {
+    margin-top: 1.5em;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    border-color: rgba(0, 0, 0, 0.1);
+    border-style: solid;
+    border-width: 1px 0 0 1px;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    border-color: rgba(0, 0, 0, 0.1);
+    border-style: solid;
+    border-width: 0 1px 1px 0;
+    padding: 0.375em 0.75em;
+  }
+  
+</style>
+  
+</head>
+<body>
+
+<header>
+  <h1>Votes in the My LA2050 Activation Challenge (Test data)</h1>
+  <p><strong id="total-votes"></strong> votes have been cast by <strong id="total-voters"></strong> voters.</p>
+</header>
+
+<section class="learn">
+  <h2></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Finalist</th>
+        <th>Votes</th>
+      </tr> 
+    </thead> 
+    <tbody>
+    </tbody>
+  </table>
+</section>
+
+  <section class="create">
+  <h2></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Finalist</th>
+        <th>Votes</th>
+      </tr> 
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<section class="play">
+  <h2></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Finalist</th>
+        <th>Votes</th>
+      </tr> 
+    </thead> 
+    <tbody></tbody>
+  </table>
+</section>
+
+<section class="connect">
+  <h2></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Finalist</th>
+        <th>Votes</th>
+      </tr> 
+    </thead> 
+    <tbody></tbody>
+  </table>
+</section>
+
+<section class="live">
+  <h2></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Finalist</th>
+        <th>Votes</th>
+      </tr> 
+    </thead> 
+    <tbody></tbody>
+  </table>
+</section>
+  
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<script>
+
+
+(function(){
+
+  fetch('/data/')
+    .then(function(response) {
+      return response.json()
+    })
+    .then(function(myJson) {
+      //parseData(myJson)
+      let data = (myJson)
+      showChart(data.totals)
+    })
+    .catch(function(error) {
+      console.error(error)
+    })
+
+  function showChart(totals) {
+
+    const goals = ['learn', 'create', 'play', 'connect', 'live']
+
+    var totalVotes = 0;
+    goals.forEach(function(goal) {
+      var data = totals[goal]
+      data.forEach(function(data) {
+        totalVotes += data.votes;
+      });
+    });
+    document.getElementById('total-votes').textContent = totalVotes;
+    document.getElementById('total-voters').textContent = totals.numberOfVoters;
+
+    goals.forEach(function(goal) {
+
+    console.log('goal: ' + goal);
+
+    var data = totals[goal];
+  
+    var width = 500
+    var height = 500
+    var radius = Math.min(width, height) / 2
+    
+    
+    var svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+
+    g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+      
+    // var svg = d3.select("svg"),
+    //     width = +svg.attr("width"),
+    //     height = +svg.attr("height"),
+    //     radius = Math.min(width, height) / 2,
+    //     g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    let color
+    switch(goal) {
+      case 'learn':
+        color = 'rgb(6, 179, 188)' // ; /* @blueberry */
+        color = d3.scaleOrdinal(["rgba(6, 179, 188, 1)", "rgba(6, 179, 188, 0.9)", "rgba(6, 179, 188, 0.7)", "rgba(6, 179, 188, 0.6)", "rgba(6, 179, 188, 0.5)"]);
+        break
+      case 'create':
+        color = 'rgb(255, 194, 51)' //; /* @banana */
+        color = d3.scaleOrdinal(["rgba(255, 194, 51, 1)", "rgba(255, 194, 51, 0.9)", "rgba(255, 194, 51, 0.7)", "rgba(255, 194, 51, 0.6)", "rgba(255, 194, 51, 0.5)"]);
+        break
+      case 'play':
+        color = 'rgb(237, 59, 136)' //; /* @strawberry */
+        color = d3.scaleOrdinal(["rgba(237, 59, 136, 1)", "rgba(237, 59, 136, 0.9)", "rgba(237, 59, 136, 0.7)", "rgba(237, 59, 136, 0.6)", "rgba(237, 59, 136, 0.5)"]);
+        break
+      case 'connect':
+        color = 'rgb(249, 160, 51)' //; /* @tangerine */
+        color = d3.scaleOrdinal(["rgba(249, 160, 51, 1)", "rgba(249, 160, 51, 0.9)", "rgba(249, 160, 51, 0.7)", "rgba(249, 160, 51, 0.6)", "rgba(249, 160, 51, 0.5)"]);
+        break
+      case 'live':
+        color = 'rgb(141, 208, 59)' //; /* @lime */
+        color = d3.scaleOrdinal(["rgba(141, 208, 59, 1)", "rgba(141, 208, 59, 0.9)", "rgba(141, 208, 59, 0.7)", "rgba(141, 208, 59, 0.6)", "rgba(141, 208, 59, 0.5)"]);
+        break
+      default:
+        color = 'gray'
+        color = d3.scaleOrdinal(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"]);
+    }
+
+
+    function createRow(table, data) {
+      console.dir(data)
+      let body = table.querySelector('tbody')
+      let tr = document.createElement('tr')
+      let finalist = document.createElement('td')
+      let votes = document.createElement('td')
+      finalist.textContent = data.finalist
+      votes.textContent = data.votes
+      tr.appendChild(finalist)
+      tr.appendChild(votes)
+      body.appendChild(tr)
+    }
+      
+      
+    var table = document.querySelector('.' + goal);
+    if (table) {
+      table.querySelector('h2').textContent = goal;
+      data.forEach(function(item) {
+        createRow(table, item)
+      })
+    }
+    
+    
+    
+    var pie = d3.pie()
+        .sort(null)
+        .value(function(d) { return d.votes; });
+
+    var path = d3.arc()
+        .outerRadius(radius - 10)
+        .innerRadius(0);
+
+    var label = d3.arc()
+        .outerRadius(radius - 40)
+        .innerRadius(radius - 40);
+
+    // d3.csv("data.csv", function(d) {
+    //   d.votes = +d.votes;
+    //   return d;
+    // }, function(error, data) {
+      //if (error) throw error;
+
+      var arc = g.selectAll(".arc")
+        .data(pie(data))
+        .enter().append("g")
+          .attr("class", "arc");
+
+      arc.append("path")
+          .attr("d", path)
+          .attr("fill", function(d) { return color(d.data.finalist); });
+
+      arc.append("text")
+          .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
+          .attr("dy", "0.35em")
+          .text(function(d) { return d.data.finalist; });
+    //});
+
+      
+    })
+  }
+    
+})();
+
+</script>
+  
+</body>
+</html>
+
