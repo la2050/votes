@@ -7,15 +7,22 @@ body {
 svg {
   margin: 0 4.5em 4.5em;
 }
+svg text {
+  font-size: 1.25em;
+}
 h2 {
   margin-top: 4.5em;
   margin-bottom: 1.5em;
   text-transform: uppercase;
 }
 
+table {
+  margin-bottom: 1.5em;
+}
+
 @media (min-width: 1000px) {
   body {
-    display: grid;
+/*     display: grid; */
     grid-template-columns: 1fr 1fr;
     grid-column-gap: 3em;
     grid-row-gap: 4.5em;
@@ -26,11 +33,11 @@ h2 {
   }
   h2,
   svg {
-    margin: 0;
+/*     margin: 0; */
     align-self: center;
     justify-self: center;
   }
-  h2:nth-of-type(1),
+/*   h2:nth-of-type(1),
   h2:nth-of-type(2) {
     grid-row: 2/3;
   }
@@ -53,17 +60,17 @@ h2 {
   svg:nth-of-type(5) {
     grid-column: 1/-1;
     grid-row: 7/8;
-  }
+  } */
 }
 
 @media (min-width: 2500px) {
-  body {
+/*   body {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     grid-column-gap: 3em;
     grid-row-gap: 4.5em;
-  }
-  header:nth-child(n) {
+  } */
+/*   header:nth-child(n) {
     grid-row: 1/2;
     grid-column: 1/-1;
   }
@@ -74,5 +81,5 @@ h2 {
   svg:nth-child(n) {
     grid-row: 3/4;
     grid-column: auto;
-  }
+  } */
 }

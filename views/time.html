@@ -48,7 +48,7 @@
     .then(function(myJson) {
       let data = (myJson)
       console.dir(data)
-      showChart(data.time.learn)
+      showChart(data.time)
     })
     .catch(function(error) {
       console.error(error)
@@ -57,6 +57,9 @@
   function showChart(data) {
     // console.dir(data)
 
+    let precision = data.precision
+    data = data.total
+    
     const goals = ['learn', 'create', 'play', 'connect', 'live']
 
     var svg = d3.select("svg"),
@@ -67,9 +70,14 @@
 
     // https://github.com/d3/d3-time-format/blob/master/README.md#locale_parse
     // https://github.com/d3/d3-time-format/issues/24#issuecomment-252112973
-    var parseMilliseconds = d3.utcParse("%Y-%m-%dT%H:%M:%S.Z"),
-      stripNanoseconds = function(s) { console.log('stripNanoseconds: ' + s.slice(0, -4) + "Z"); return s.slice(0, -4) + "Z"; },
-      parseTime = function(s) { console.log('parseTime: ' + s); return parseMilliseconds(stripNanoseconds(s)); };
+    
+    let parseMilliseconds = d3.utcParse("%Y-%m-%dT%H:%M:%S.Z")
+    let stripNanoseconds = function(s) { console.log('stripNanoseconds: ' + s.slice(0, -4) + "Z"); return s.slice(0, -4) + "Z"; }
+    let parseTime = function(s) { console.log('parseTime: ' + s); return parseMilliseconds(stripNanoseconds(s)); }
+    
+    if (precision === 'day') {
+      parseTime = d3.timeParse("%Y-%m-%d")
+    }
     
     var x = d3.scaleTime()
         .rangeRound([0, width]);
@@ -78,16 +86,16 @@
         .rangeRound([height, 0]);
 
     var area = d3.area()
-        .x(function(d) { console.dir(d); return x(parseTime(d.timestamp)); })
+        .x(function(d) { return x(parseTime(d.timestamp)); })
         .y1(function(d) { return y(d.votes); });
 
-    x.domain(d3.extent(data, function(d) { console.dir(d); return parseTime(d.timestamp); }));
+    x.domain(d3.extent(data, function(d) { return parseTime(d.timestamp); }));
     y.domain([0, d3.max(data, function(d) { return d.votes; })]);
     area.y0(y(0));
 
     g.append("path")
         .datum(data)
-        .attr("fill", "steelblue")
+        .attr("fill", 'rgb(6, 179, 188)') /* @blueberry */
         .attr("d", area);
 
     g.append("g")
@@ -102,9 +110,7 @@
         .attr("y", 6)
         .attr("dy", "0.71em")
         .attr("text-anchor", "end")
-        .text("Price ($)");
-
-    
+        .text("Votes");
   }
 })()
     

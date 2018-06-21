@@ -12,12 +12,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="robots" content="noindex" />
-  <title>Votes in the My LA2050 Activation Challenge (Test data)</title>
+  <title>Votes in the My LA2050 Activation Challenge</title>
   <link rel="stylesheet" href="/style.css" />
   <style>
 
   .arc text {
-    font: 10px sans-serif;
+    /* font: 10px sans-serif; */
     text-anchor: middle;
   }
 
@@ -44,16 +44,33 @@
     padding: 0.375em 0.75em;
   }
   
+  #loading-message {
+    color: rgb(141, 208, 59);
+  }
+  .hidden {
+    display: none;
+  }
+    
 </style>
   
 </head>
 <body>
 
 <header>
-  <h1>Votes in the My LA2050 Activation Challenge (Test data)</h1>
-  <p><strong id="total-votes"></strong> votes have been cast by <strong id="total-voters"></strong> voters.</p>
+  <h1>Votes in the My LA2050 Activation Challenge</h1>
+  <p id="total-stats" class="hidden">
+    <strong id="total-votes"></strong> votes have been cast by <strong id="total-voters"></strong> voters.<br /><br />
+    <strong id="total-subscribers"></strong> voters have subscribed to the email list.
+  </p>
 </header>
 
+<h2 id="loading-message" class="hidden">Loading data…</h2>
+  
+<section>
+  <h2 id="time-headline" class="hidden">Votes over time</h2>
+  <svg class="time" width="960" height="500"></svg>
+</section>
+  
 <section class="learn">
   <h2></h2>
   <table>
@@ -66,9 +83,10 @@
     <tbody>
     </tbody>
   </table>
+  <svg class="learn"></svg>
 </section>
 
-  <section class="create">
+<section class="create">
   <h2></h2>
   <table>
     <thead>
@@ -79,6 +97,7 @@
     </thead>
     <tbody></tbody>
   </table>
+  <svg class="create"></svg>
 </section>
 
 <section class="play">
@@ -92,6 +111,7 @@
     </thead> 
     <tbody></tbody>
   </table>
+  <svg class="play"></svg>
 </section>
 
 <section class="connect">
@@ -105,6 +125,7 @@
     </thead> 
     <tbody></tbody>
   </table>
+  <svg class="connect"></svg>
 </section>
 
 <section class="live">
@@ -118,7 +139,10 @@
     </thead> 
     <tbody></tbody>
   </table>
+  <svg class="live"></svg>
 </section>
+
+
   
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
@@ -127,14 +151,72 @@
 
 (function(){
 
+  function simplify(name) {
+    return name.replace(
+      'The Youth Movement Against Alzheimer’s)',
+      'The Youth Movement'
+    ).replace(
+      'National Association of Latino Independent Producers (NALIP)',
+      'Latino Independent Producers'
+    ).replace(
+      'Move LA, a project of Community Partners',
+      'Move LA'
+    ).replace(
+      'Environment California Research & Policy Center',
+      'California Research Center'
+    ).replace(
+      'East LA Community Corporation (ELACC)',
+      'East LA Community Corporation'
+    ).replace(
+      'Long Beach Downtown Development Corporation',
+      'Long Beach Downtown'
+    ).replace(
+      'Center for Innovation in STEM Education (CISE)',
+      'Center for Innovation'
+    ).replace(
+      'Harlem Lacrosse - Los Angeles',
+      'Harlem Lacrosse'
+    ).replace(
+      'Charles R. Drew University of Medicine and Science',
+      'Charles R. Drew University'
+    ).replace(
+      'Big Brothers Big Sisters of Greater Los Angeles',
+      'Big Brothers Big Sisters'
+    ).replace(
+      'The Brady Center to Prevent Gun Violence',
+      'The Brady Center'
+    ).replace(
+      'CASA of Los Angeles',
+      'CASA'
+    ).replace(
+      'United Way of Greater Los Angeles',
+      'United Way'
+    )
+    
+  }
+  
+  var loadingMessage = document.getElementById('loading-message')
+
+  function showLoadingMessage() {
+    loadingMessage.classList.remove('hidden')
+  }
+  
+  function hideLoadingMessage() {
+    loadingMessage.classList.add('hidden')
+  }
+  
+  showLoadingMessage()
   fetch('/data/')
     .then(function(response) {
       return response.json()
     })
     .then(function(myJson) {
+      hideLoadingMessage()
       //parseData(myJson)
       let data = (myJson)
+      console.dir(data)
       showChart(data.totals)
+      showOtherChart(data.time)
     })
     .catch(function(error) {
       console.error(error)
@@ -153,6 +235,9 @@
     });
     document.getElementById('total-votes').textContent = totalVotes;
     document.getElementById('total-voters').textContent = totals.numberOfVoters;
+    document.getElementById('total-subscribers').textContent = totals.numberOfSubscribers;
+    document.getElementById('total-stats').classList.remove('hidden');
+    document.getElementById('time-headline').classList.remove('hidden');
 
     goals.forEach(function(goal) {
 
@@ -160,12 +245,12 @@
 
     var data = totals[goal];
   
-    var width = 500
+    var width = 900
     var height = 500
     var radius = Math.min(width, height) / 2
     
     
-    var svg = d3.select("body").append("svg")
+    var svg = d3.select("svg." + goal)
         .attr("width", width)
         .attr("height", height)
 
@@ -211,7 +296,7 @@
       let tr = document.createElement('tr')
       let finalist = document.createElement('td')
       let votes = document.createElement('td')
-      finalist.textContent = data.finalist
+      finalist.textContent = simplify(data.finalist)
       votes.textContent = data.votes
       tr.appendChild(finalist)
       tr.appendChild(votes)
@@ -259,16 +344,80 @@
       arc.append("text")
           .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
           .attr("dy", "0.35em")
-          .text(function(d) { return d.data.finalist; });
+          .text(function(d) { return simplify(d.data.finalist) });
     //});
 
       
     })
   }
-    
-})();
 
+  
+
+  function showOtherChart(data) {
+    // console.dir(data)
+
+    let precision = data.precision
+    data = data.total
+    
+    const goals = ['learn', 'create', 'play', 'connect', 'live']
+
+    var svg = d3.select("svg.time"),
+        margin = {top: 20, right: 20, bottom: 30, left: 50},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom,
+        g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // https://github.com/d3/d3-time-format/blob/master/README.md#locale_parse
+    // https://github.com/d3/d3-time-format/issues/24#issuecomment-252112973
+    
+    let parseMilliseconds = d3.utcParse("%Y-%m-%dT%H:%M:%S.Z")
+    let stripNanoseconds = function(s) { console.log('stripNanoseconds: ' + s.slice(0, -4) + "Z"); return s.slice(0, -4) + "Z"; }
+    let parseTime = function(s) { console.log('parseTime: ' + s); return parseMilliseconds(stripNanoseconds(s)); }
+    
+    if (precision === 'day') {
+      parseTime = d3.timeParse("%Y-%m-%d")
+    }
+    
+    var x = d3.scaleTime()
+        .rangeRound([0, width]);
+
+    var y = d3.scaleLinear()
+        .rangeRound([height, 0]);
+
+    var area = d3.area()
+        .x(function(d) { return x(parseTime(d.timestamp)); })
+        .y1(function(d) { return y(d.votes); });
+
+    x.domain(d3.extent(data, function(d) { return parseTime(d.timestamp); }));
+    y.domain([0, d3.max(data, function(d) { return d.votes; })]);
+    area.y0(y(0));
+
+    g.append("path")
+        .datum(data)
+        .attr("fill", 'rgba(6, 179, 188, 0.5)') /* @blueberry */
+        .attr("d", area);
+
+    g.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+    g.append("g")
+        .call(d3.axisLeft(y))
+      .append("text")
+        .attr("fill", "#000")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", "0.71em")
+        .attr("text-anchor", "end")
+        .text("Votes");
+  }
+})()
+    
+    
 </script>
+
+  
+  
   
 </body>
 </html>
