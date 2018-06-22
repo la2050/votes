@@ -47,6 +47,9 @@
   #loading-message {
     color: rgb(141, 208, 59);
   }
+  #error-message {
+    color: rgb(237, 59, 136);
+  }
   .hidden {
     display: none;
   }
@@ -64,6 +67,35 @@
   </p>
 </header>
 
+<section id="error-message" class="hidden">
+  <h3>Oops! Something went wrong while loading the data.</h3>
+  <p>
+    Please try refreshing this page. You can also re-enter your password.
+  </p>
+</section>
+  
+<form action="/votes/" method="post" class="hidden">
+  <p>
+    <label>
+      Please enter your password<br />
+      <input type="password" name="password" required="required" />
+    </label>
+  </p>
+  <p>
+    <button type="submit">
+      Submit
+    </button>
+  </p>
+</form>
+
+<script>
+document.querySelector('form').addEventListener('submit', function() {
+  try {
+    localStorage.setItem('secret_password', document.querySelector('input[name="password"]').value)
+  } catch(e) {}
+});
+</script>
+  
 <h2 id="loading-message" class="hidden">Loading data…</h2>
   
 <section>
@@ -151,6 +183,12 @@
 
 (function(){
 
+  var password = localStorage.getItem('secret_password')
+  if (!password && password === "") {
+    document.querySelector('form').classList.remove('hidden');
+    return;
+  }
+
   function simplify(name) {
     return name.replace(
       'The Youth Movement Against Alzheimer’s)',
@@ -196,6 +234,7 @@
   }
   
   var loadingMessage = document.getElementById('loading-message')
+  var errorMessage = document.getElementById('error-message')
 
   function showLoadingMessage() {
     loadingMessage.classList.remove('hidden')
@@ -204,9 +243,19 @@
   function hideLoadingMessage() {
     loadingMessage.classList.add('hidden')
   }
+
+  function showErrorMessage() {
+    errorMessage.classList.remove('hidden')
+  }
+
+  function hideErrorMessage() {
+    errorMessage.classList.add('hidden')
+  }
   
   showLoadingMessage()
-  fetch('/data/')
+  hideErrorMessage()
+  
+  fetch("/" + password + "/data.json")
     .then(function(response) {
       return response.json()
     })
@@ -220,6 +269,10 @@
     })
     .catch(function(error) {
       console.error(error)
+      document.querySelector('form').classList.remove('hidden');
+      hideLoadingMessage();
+      showErrorMessage();
+      return;
     })
 
   function showChart(totals) {
@@ -374,9 +427,13 @@
     let stripNanoseconds = function(s) { console.log('stripNanoseconds: ' + s.slice(0, -4) + "Z"); return s.slice(0, -4) + "Z"; }
     let parseTime = function(s) { console.log('parseTime: ' + s); return parseMilliseconds(stripNanoseconds(s)); }
     
-    if (precision === 'day') {
-      parseTime = d3.timeParse("%Y-%m-%d")
-    }
+    // if (precision === 'day') {
+    //   parseTime = d3.timeParse("%Y-%m-%d")
+    // } else if (precision === 'hour') {
+    //   parseTime = d3.timeParse("%Y-%m-%d, %I%p")
+    // } else {
+    //   parseTime = d3.timeParse("%Y-%m-%d:%H:%M:%S")
+    // }
     
     var x = d3.scaleTime()
         .rangeRound([0, width]);

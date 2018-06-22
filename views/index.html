@@ -1,0 +1,49 @@
+<!-- This is a static file -->
+<!-- served from your routes in server.js -->
+
+<!-- You might want to try something fancier: -->
+<!-- html/nunjucks docs: https://mozilla.github.io/nunjucks/ -->
+<!-- pug: https://pugjs.org/ -->
+<!-- haml: http://haml.info/ -->
+<!-- hbs(handlebars): http://handlebarsjs.com/ -->
+
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="robots" content="noindex" />
+  <title>Votes in the My LA2050 Activation Challenge</title>
+  <link rel="stylesheet" href="/style.css" />
+  
+</head>
+<body>
+
+<header>
+  <h1>Votes in the My LA2050 Activation Challenge</h1>
+</header>
+
+<form action="/votes/" method="post">
+  <p>
+    <label>
+      Please enter your password<br />
+      <input type="password" name="password" />
+    </label>
+  </p>
+  <p>
+    <button type="submit">
+      Submit
+    </button>
+  </p>
+</form>
+
+<script>
+document.querySelector('form').addEventListener('submit', function() {
+  try {
+    localStorage.setItem('secret_password', document.querySelector('input[name="password"]').value)
+  } catch(e) {}
+});
+</script>
+  
+</body>
+</html>
+

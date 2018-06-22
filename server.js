@@ -4,6 +4,7 @@
 // init project
 var express = require('express');
 var app = express();
+var bodyParser = require('body-parser');
 var fetch = require('node-fetch');
 
 // we've started you off with Express, 
@@ -12,10 +13,61 @@ var fetch = require('node-fetch');
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
 
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Add a trailing slash to URLs
+// https://stackoverflow.com/questions/13442377/redirect-all-trailing-slashes-globally-in-express#15773824
+app.use((req, res, next) => {
+  const test = /\?[^]*\//.test(req.url);
+  if (req.url.substr(-1) !== '/' && req.url.length > 1 && !test)
+    res.redirect(301, `${req.url}/`);
+  else
+    next();
+});
+
+/*
+app.use((req, res, next) => {
+  // if (req.protocol !== 'https') {
+  //   return res.redirect('https://' + req.headers.host + req.url);
+  // }
+  console.log(`req.secure: ${req.secure}`)
+  next();
+})
+*/
+
+
+
 // http://expressjs.com/en/starter/basic-routing.html
+app.get("/", function (request, response) {
+  response.sendFile(__dirname + '/views/index.html');
+});
+
 app.get("/votes/", function (request, response) {
   response.sendFile(__dirname + '/views/votes.html');
 });
+
+app.post("/votes/", function (request, response) {
+  response.redirect(301, '/votes/');
+});
+
+/*
+app.get("/votes/", function (request, response) {
+  response.redirect(301, '/');
+});
+
+
+app.post("/sign-in/", function (request, response) {
+  if (request.body.password === process.env.SECRET_PASSWORD) {
+    response.redirect(301, `/${process.env.SECRET_URL}/`);
+  } else {
+    response.redirect(301, '/');
+  }
+});
+
+app.get(`/${process.env.SECRET_URL}/`, function (request, response) {
+  response.sendFile(__dirname + '/views/votes.html');
+});
+*/
 
 
 // http://expressjs.com/en/starter/basic-routing.html
@@ -28,13 +80,14 @@ function flatten(arr) {
   return [].concat(...arr)
 }
 
-app.get("/data/", function (request, response) {
+app.get(`/${process.env.SECRET_PASSWORD}/data.json`, function (request, response) {
 
   let promises = []
 
-  let per_page = 500
-  let estimated_records = 15000
-  let estimated_subscribe_records = 1500
+  const request_limit = 200
+  let estimated_records = 11000
+  let per_page = estimated_records / request_limit
+  let estimated_subscribe_records = 200
   
   for (var index = 1; index <= estimated_records / per_page; index++) {
     promises.push(
@@ -47,6 +100,9 @@ app.get("/data/", function (request, response) {
   Promise.all(promises)
     .then(json => {
       // console.log(json);
+
+      // let data = parseData(flatten(json));
+      // response.send(data);
 
       new Promise(resolve => {
         fetch(`${process.env.API_URL_SUBSCRIBE}&per_page=${estimated_subscribe_records}&page=1`).then(res => { resolve(res.json()) })
@@ -105,7 +161,7 @@ function parseData(myJson, subscribersJson) {
   const goals = ['learn', 'create', 'play', 'connect', 'live']
   let totals = {}
   let voters = (myJson)
-  let subscribers = (subscribersJson)
+  let subscribers = (subscribersJson) || []
   var numberOfSubscribers = subscribers.length
 
   // let ttime = [{
@@ -154,11 +210,13 @@ function parseData(myJson, subscribersJson) {
   //   time[timestamp][goal].voters++
   // }
 
-  const precision = 'day' // 'nanosecond'
+  const precision = 'hour' // 'nanosecond'
 
   function updateVotes(goal, timestamp) {
     if (precision === 'day') {
       timestamp = timestamp.split('T')[0]; // Timestamp Example: 2018-05-06T06:59:56.295Z
+    } else if (precision === 'hour') {
+      timestamp = `${timestamp.split(':')[0]}:00:00.000Z`; // Timestamp Example: 2018-05-06T06:59:56.295Z
     }
     if (!time[timestamp])             time[timestamp] = {}
     if (!time[timestamp][goal])       time[timestamp][goal] = {}
@@ -171,7 +229,7 @@ function parseData(myJson, subscribersJson) {
   }
   
   voters.forEach(function(vote) {
-    if (vote.data.subscribe_email_list.toLowerCase() === "yes") {
+    if (vote.data.email && vote.data.email != "" && vote.data.subscribe_email_list.toLowerCase() === "yes") {
       numberOfSubscribers++
     }
     goals.forEach(function(goal) {
