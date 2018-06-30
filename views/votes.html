@@ -191,7 +191,7 @@ document.querySelector('form').addEventListener('submit', function() {
 
   function simplify(name) {
     return name.replace(
-      'The Youth Movement Against Alzheimer’s)',
+      'The Youth Movement Against Alzheimer’s',
       'The Youth Movement'
     ).replace(
       'National Association of Latino Independent Producers (NALIP)',
@@ -229,6 +229,12 @@ document.querySelector('form').addEventListener('submit', function() {
     ).replace(
       'United Way of Greater Los Angeles',
       'United Way'
+    ).replace(
+      'Los Angeles Dodgers Foundation',
+      'Los Angeles Dodgers'
+    ).replace(
+      'Kounkuey Design Initiative',
+      'Kounkuey'
     )
     
   }
@@ -264,6 +270,7 @@ document.querySelector('form').addEventListener('submit', function() {
       //parseData(myJson)
       let data = (myJson)
       console.dir(data)
+      console.log(data)
       showChart(data.totals)
       showOtherChart(data.time)
     })

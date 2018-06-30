@@ -35,8 +35,6 @@ app.use((req, res, next) => {
 })
 */
 
-
-
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", function (request, response) {
   response.sendFile(__dirname + '/views/index.html');
@@ -84,18 +82,27 @@ app.get(`/${process.env.SECRET_PASSWORD}/data.json`, function (request, response
 
   let promises = []
 
-  const request_limit = 200
-  let estimated_records = 11000
-  let per_page = estimated_records / request_limit
-  let estimated_subscribe_records = 200
+  // const request_limit = 10
+  // let estimated_records = 1000
+  let estimated_unauthenticated_records = 1000
+  let estimated_subscribe_records = 1000
+  let max_pages = 28
+  let per_page = 1000 //Math.ceil(estimated_records / (request_limit - 1))
   
-  for (var index = 1; index <= estimated_records / per_page; index++) {
+  for (var index = 1; index <= max_pages; index++) {
     promises.push(
       new Promise(resolve => {
         fetch(`${process.env.API_URL}&per_page=${per_page}&page=${index}`).then(res => { resolve(res.json()) })
       })
     )
   }
+  
+  promises.push(
+    new Promise(resolve => {
+      fetch(`${process.env.API_URL_UNAUTHENTICATED}&per_page=${estimated_unauthenticated_records}&page=1`)
+        .then(res => { resolve(res.json()) })
+    })
+  )
   
   Promise.all(promises)
     .then(json => {
@@ -105,7 +112,8 @@ app.get(`/${process.env.SECRET_PASSWORD}/data.json`, function (request, response
       // response.send(data);
 
       new Promise(resolve => {
-        fetch(`${process.env.API_URL_SUBSCRIBE}&per_page=${estimated_subscribe_records}&page=1`).then(res => { resolve(res.json()) })
+        fetch(`${process.env.API_URL_SUBSCRIBE}&per_page=${estimated_subscribe_records}&page=1`)
+          .then(res => { resolve(res.json()) })
       })
       .then(subscribers => {
 
@@ -164,6 +172,75 @@ function parseData(myJson, subscribersJson) {
   let subscribers = (subscribersJson) || []
   var numberOfSubscribers = subscribers.length
 
+  
+  
+  var authenticatedVoters = []
+  var unauthenticatedVoters = []
+  var telephoneVoters = []
+  var emailVoters = []
+  var facebookVoters = []
+  var seen = {}
+  voters.forEach(function(voter) {
+
+    if (voter.data.auth_sub && voter.data.auth_sub != "") {
+      if (!seen[voter.data.auth_sub]) {
+        seen[voter.data.auth_sub] = authenticatedVoters.length
+        authenticatedVoters.push(voter)
+        if (voter.data.telephone && voter.data.telephone != "") {
+          if (!seen[voter.data.telephone]) {
+            seen[voter.data.telephone] = telephoneVoters.length
+            telephoneVoters.push(voter)
+          }
+        } else if (voter.data.email && voter.data.email != "") {
+          if (!seen[voter.data.email]) {
+            seen[voter.data.email] = emailVoters.length
+            emailVoters.push(voter)
+          }
+        } else if (voter.data.auth_sub.includes('facebook')) {
+          facebookVoters.push(voter)
+        }
+      } else {
+        // OPTIONAL: Use the last vote, instead of the first
+        // authenticatedVoters[seen[voter.data.auth_sub]] = voter
+      }
+    } else if (voter.data.telephone && voter.data.telephone != "") {
+      if (!seen[voter.data.telephone]) {
+        seen[voter.data.telephone] = telephoneVoters.length
+        unauthenticatedVoters.push(voter)
+      }
+    } else if (voter.data.email && voter.data.email != "") {
+      if (!seen[voter.data.email]) {
+        seen[voter.data.email] = emailVoters.length
+        unauthenticatedVoters.push(voter)
+      }
+    } else {
+      console.log('Unhandled case while determining unique voters')
+    }
+  })
+  
+  if (authenticatedVoters[0]) console.log("authenticated: ")
+  if (authenticatedVoters[0]) console.dir(authenticatedVoters[0].data.auth_sub)
+
+  if (unauthenticatedVoters[0]) console.log("unauthenticated: ")
+  if (unauthenticatedVoters[0]) console.dir(unauthenticatedVoters[0].data.telephone)
+  if (unauthenticatedVoters[0]) console.dir(unauthenticatedVoters[0].data.email)
+
+  if (telephoneVoters[0]) console.log("telephone: ")
+  if (telephoneVoters[0]) console.dir(telephoneVoters[0].data.telephone)
+
+  if (emailVoters[0]) console.log("email: ")
+  if (emailVoters[0]) console.dir(emailVoters[0].data.email)
+
+  console.log("facebook: ")
+  if (facebookVoters[0]) console.dir(facebookVoters[0].data.social_network)
+  
+  voters = flatten([
+    authenticatedVoters,
+    unauthenticatedVoters
+  ])
+  
+  //voters = authenticatedVoters
+  
   // let ttime = [{
   //   date: 'datestamp',
   //   votes: [5, 7, 9, 0, 1]
@@ -229,7 +306,7 @@ function parseData(myJson, subscribersJson) {
   }
   
   voters.forEach(function(vote) {
-    if (vote.data.email && vote.data.email != "" && vote.data.subscribe_email_list.toLowerCase() === "yes") {
+    if (vote.data.email && vote.data.email != "" && vote.data.subscribe_email_list && vote.data.subscribe_email_list.toLowerCase() === "yes") {
       numberOfSubscribers++
     }
     goals.forEach(function(goal) {
@@ -273,7 +350,7 @@ function parseData(myJson, subscribersJson) {
   }
   
   // console.log('*** time')
-  console.dir(votesOverTime)
+  // console.dir(votesOverTime)
   
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
   goals.forEach(function(goal) {
